@@ -9,6 +9,9 @@ import PinIcon from './PinIcon';
 import Context from '../context';
 import Blog from './Blog';
 
+import { useClient } from "../client";
+import { GET_PINS_QUERY } from "../graphql/queries";
+
 const INITIAL_VIEWPORT = {
   latitude: 37.7577,
   longitude: -122.4376,
@@ -16,6 +19,7 @@ const INITIAL_VIEWPORT = {
 };
 
 const Map = ({ classes }) => {
+  const client = useClient();
   const [viewport, setViewport] = useState(INITIAL_VIEWPORT);
   const [userPosition, setUserPostion] = useState(null);
 
@@ -23,6 +27,10 @@ const Map = ({ classes }) => {
 
   useEffect(() => {
     getUserPosition();
+  },[]);
+
+  useEffect(() => {
+    getPins();
   },[]);
 
   const getUserPosition = () => {
@@ -43,6 +51,11 @@ const Map = ({ classes }) => {
       }
     ); 
     }
+  }
+
+  const getPins = async () => {
+    const { getPins } = await client.request(GET_PINS_QUERY);
+    console.log({ getPins });
   }
 
   const handleMapClick = ({ lngLat, leftButton }) => {
