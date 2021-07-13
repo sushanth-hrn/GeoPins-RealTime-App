@@ -1,12 +1,15 @@
 import React from "react";
 import { withStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
-import AccessTimeIcon from "@material-ui/icons/AccessTime";
+//import AccessTimeIcon from "@material-ui/icons/AccessTime";
 import FaceIcon from "@material-ui/icons/Face";
-import format from 'date-fns/format';
+//import format from 'date-fns/format';
 
 import Context from '../../context';
 import { useContext } from "react";
+
+import Comments from '../Comment/Comments';
+import CreateComment from '../Comment/CreateComment'
 
 const PinContent = ({ classes }) => {
   const { state } = useContext(Context);
@@ -46,6 +49,8 @@ const PinContent = ({ classes }) => {
       >
         {content}
       </Typography>
+      <CreateComment />
+      <Comments comments={comments} />
     </div>    
   )
 };
