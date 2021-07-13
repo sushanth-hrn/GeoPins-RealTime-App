@@ -1,5 +1,10 @@
-const { AuthenticationError } = require('apollo-server');
+const { AuthenticationError, PubSub } = require('apollo-server');
 const Pin = require('./models/Pin');
+
+const pubsub = new PubSub();
+const PIN_ADDED = 'PIN_ADDED';
+const PIN_DELETED = 'PIN_DELETED';
+const PIN_UPDATED = 'PIN_DELETED';
 
 const authenticated = next => (root, args, ctx, info) => {
     if(!ctx.currentUser){
@@ -23,10 +28,12 @@ module.exports = {
                 author: ctx.currentUser._id
             }).save();
             const pinAdded = Pin.populate(createdPin,'author');
+            pubsub.publish(PIN_ADDED, { pinAdded });
             return pinAdded;
         }),
         deletePin: authenticated(async (root, args, ctx) => {
             const deletedPin = await Pin.findOneAndDelete({ _id : args.pinId}).exec();
+            pubsub.publish(PIN_DELETED, { deletedPin });
             return deletedPin;
         }),
         createComment: authenticated(async (root, args, ctx) => {
@@ -37,8 +44,20 @@ module.exports = {
                 { new : true }
             ).populate('author')
             .populate('comments.author');
+            pubsub.publish(PIN_UPDATED, { updatedPin });
             return updatedPin;
         })
+    },
+    Subscription: {
+        pinAdded: {
+            subscribe: () => pubsub.asyncIterator(PIN_ADDED)
+        },
+        pinDeleted: {
+            subscribe: () => pubsub.asyncIterator(PIN_DELETED)
+        },
+        pinUpdated: {
+            subscribe: () => pubsub.asyncIterator(PIN_UPDATED)
+        }
     }
 }
 
