@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
 import { withStyles } from "@material-ui/core/styles";
-import ReactMapGL, { NavigationControl, Marker } from 'react-map-gl';
-// import Button from "@material-ui/core/Button";
-// import Typography from "@material-ui/core/Typography";
-// import DeleteIcon from "@material-ui/icons/DeleteTwoTone";
+import ReactMapGL, { NavigationControl, Marker, Popup } from 'react-map-gl';
+import Button from "@material-ui/core/Button";
+import Typography from "@material-ui/core/Typography";
+import DeleteIcon from "@material-ui/icons/DeleteTwoTone";
 
 import PinIcon from './PinIcon';
 import Context from '../context';
@@ -22,6 +22,7 @@ const Map = ({ classes }) => {
   const client = useClient();
   const [viewport, setViewport] = useState(INITIAL_VIEWPORT);
   const [userPosition, setUserPostion] = useState(null);
+  const [popup, setPopup] = useState(null);
 
   const { state, dispatch } = useContext(Context);
 
@@ -73,8 +74,14 @@ const Map = ({ classes }) => {
         longitude
       }
     })
-
   }
+
+  const handlePinClick = (pin) => {
+    setPopup(pin);
+    dispatch({ type : "CURRENT_PIN", payload : pin });  
+  }
+
+  const isAuthUser = () => state.currentUser._id === popup.author._id
 
   return (
     <div className={classes.root}>
@@ -121,9 +128,35 @@ const Map = ({ classes }) => {
               offsetLeft={-19}
               offsetTop={-37}
             >
-            <PinIcon size={40} color="darkblue" />
+              <PinIcon size={40} color="darkblue" onClick={() => handlePinClick(pin)} />
           </Marker>
           })
+        }
+
+        {
+          popup && (
+            <Popup
+              anchor="top"
+              latitude={popup.latitude}
+              longitude={popup.longitude}
+              closeOnClick={false}
+              onClose={() => setPopup(null)}
+            >
+              <img className={classes.popupImage} src={popup.image} alt={popup.title} />
+              <div className={classes.popupTab}>
+                <Typography>
+                  {popup.latitude.toFixed(6)} , {popup.longitude.toFixed(6)}
+                </Typography>
+                {
+                  isAuthUser() && (
+                    <Button>
+                      <DeleteIcon className={classes.deleteIcon} />
+                    </Button>
+                  )
+                }
+              </div>
+            </Popup>
+          )
         }
       </ReactMapGL>
       <Blog />
