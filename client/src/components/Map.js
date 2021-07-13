@@ -150,7 +150,7 @@ const Map = ({ classes }) => {
               latitude={popup.latitude}
               longitude={popup.longitude}
               closeOnClick={false}
-              onClose={() => setPopup(null)}
+              onClose={() => { setPopup(null); dispatch({ type: 'CANCEL_POPUP'})}}
             >
               <img className={classes.popupImage} src={popup.image} alt={popup.title} />
               <div className={classes.popupTab}>
