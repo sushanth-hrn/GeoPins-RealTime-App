@@ -13,6 +13,9 @@ import { useClient } from "../client";
 import { GET_PINS_QUERY } from "../graphql/queries";
 import { DELETE_PIN_MUTATION } from "../graphql/mutations";
 
+import { Subscription } from "react-apollo";
+import { CREATE_PIN_SUBSCRIPTION, UPDATE_PIN_SUBSCRIPTION, DELETE_PIN_SUBSCRIPTION } from "../graphql/subscriptions";
+
 const INITIAL_VIEWPORT = {
   latitude: 37.7577,
   longitude: -122.4376,
@@ -88,8 +91,7 @@ const Map = ({ classes }) => {
     var variables = {
       pinId : pin._id
     }
-    const { deletePin } = await client.request(DELETE_PIN_MUTATION, variables);
-    dispatch({ type: 'DELETE_PIN', payload: deletePin._id }); 
+    await client.request(DELETE_PIN_MUTATION, variables); 
     setPopup(null);
   }
 
@@ -171,6 +173,33 @@ const Map = ({ classes }) => {
           )
         }
       </ReactMapGL>
+
+      {/* listening to all the subscriptions */}
+
+      <Subscription 
+        subscription={CREATE_PIN_SUBSCRIPTION}
+        onSubscriptionData={({ subscriptionData }) => {
+          const { pinAdded } = subscriptionData.data;
+          dispatch({ type: 'CREATE_PIN', payload: pinAdded });
+        }}
+      />
+
+      <Subscription 
+        subscription={UPDATE_PIN_SUBSCRIPTION}
+        onSubscriptionData={({ subscriptionData }) => {
+          const { pinUpdated } = subscriptionData.data;
+          dispatch({ type: 'CREATE_COMMENT', payload: pinUpdated });
+        }}
+      />
+
+      <Subscription 
+        subscription={DELETE_PIN_SUBSCRIPTION}
+        onSubscriptionData={({ subscriptionData }) => {
+          const { pinDeleted } = subscriptionData.data;
+          dispatch({ type: 'DELETE_PIN', payload: pinDeleted._id });
+        }}
+      />
+
       <Blog />
     </div>
   );
